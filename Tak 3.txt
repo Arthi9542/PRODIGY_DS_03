@@ -1,0 +1,63 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
+
+# --------------------------------
+# Create Sample Bank Marketing Data
+# --------------------------------
+data = {
+    "age": [25, 45, 35, 50, 23, 40, 60, 48, 33, 28],
+    "job": ["admin", "technician", "admin", "management", "student",
+            "technician", "retired", "management", "admin", "student"],
+    "marital": ["single", "married", "married", "married", "single",
+                "single", "married", "married", "single", "single"],
+    "balance": [1000, 2000, 1500, 3000, 500, 1800, 4000, 2500, 1200, 700],
+    "housing": ["yes", "yes", "no", "yes", "no", "yes", "no", "yes", "no", "no"],
+    "loan": ["no", "no", "yes", "no", "no", "yes", "no", "no", "no", "no"],
+    "purchase": ["no", "yes", "yes", "yes", "no", "yes", "no", "yes", "no", "no"]
+}
+
+df = pd.DataFrame(data)
+
+# --------------------------------
+# Encode Categorical Features SAFELY
+# --------------------------------
+label_encoders = {}
+for column in df.select_dtypes(include="object"):
+    le = LabelEncoder()
+    df[column] = le.fit_transform(df[column])
+    label_encoders[column] = le
+
+# --------------------------------
+# Split Dataset
+# --------------------------------
+X = df.drop("purchase", axis=1)
+y = df["purchase"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42
+)
+
+# --------------------------------
+# Train Decision Tree Model
+# --------------------------------
+model = DecisionTreeClassifier(random_state=42)
+model.fit(X_train, y_train)
+
+# --------------------------------
+# Evaluate Model
+# --------------------------------
+y_pred = model.predict(X_test)
+print("Model Accuracy:", accuracy_score(y_test, y_pred))
+
+# --------------------------------
+# Plot Feature Importance (SAFER than plot_tree)
+# --------------------------------
+plt.figure(figsize=(8, 4))
+plt.barh(X.columns, model.feature_importances_)
+plt.xlabel("Feature Importance")
+plt.title("Decision Tree Feature Importance")
+plt.show()
